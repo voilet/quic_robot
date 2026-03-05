@@ -3,31 +3,30 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/lucas-clemente/quic-go"
+	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
+	"github.com/voilet/quic_robot/internal/audit"
 )
 
 type Server struct {
-	quicListener  quic.Listener
+	quicListener  *quic.Listener
 	agents        map[string]*AgentConnection
-	auditLogger   *AuditLogger
+	auditLogger   *audit.AuditLogger
 	websocketPort string
 	logger        zerolog.Logger
 }
 
 type AgentConnection struct {
-	AgentID    string
-	Conn       quic.Connection
-	LastSeen   time.Time
-	Streams    map[int64]quic.Stream
+	AgentID  string
+	Conn     quic.Connection
+	LastSeen time.Time
+	Streams  map[int64]quic.Stream
 }
 
 func main() {
@@ -36,13 +35,13 @@ func main() {
 	zerolog.DefaultContextLogger = &logger
 
 	// Create logs directory
-	logDir := "/var/log/quic-robot"
+	logDir := "./logs"
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		log.Fatalf("Failed to create log directory: %v", err)
 	}
 
 	// Initialize audit logger
-	auditLogger, err := NewAuditLogger(filepath.Join(logDir, "audit.log"))
+	auditLogger, err := audit.NewAuditLogger(filepath.Join(logDir, "audit.log"))
 	if err != nil {
 		log.Fatalf("Failed to create audit logger: %v", err)
 	}
@@ -60,17 +59,17 @@ func main() {
 	}
 
 	// Create QUIC listener
-	quicListener, err := quic.ListenAddr("0.0.0.0:443", tlsConfig, &quic.Config{
+	listener, err := quic.ListenAddr("0.0.0.0:443", tlsConfig, &quic.Config{
 		MaxIdleTimeout:  time.Minute * 30,
 		KeepAlivePeriod: time.Second * 15,
 	})
 	if err != nil {
 		log.Fatalf("Failed to listen on QUIC: %v", err)
 	}
-	defer quicListener.Close()
+	defer listener.Close()
 
 	server := &Server{
-		quicListener:  quicListener,
+		quicListener:  listener,
 		agents:        make(map[string]*AgentConnection),
 		auditLogger:   auditLogger,
 		websocketPort: "8080",
@@ -86,7 +85,7 @@ func main() {
 
 	// Accept incoming connections
 	for {
-		conn, err := quicListener.Accept(context.Background())
+		conn, err := listener.Accept(context.Background())
 		if err != nil {
 			logger.Error().Err(err).Msg("Failed to accept connection")
 			continue

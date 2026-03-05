@@ -1,17 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net"
 	"os"
 	"time"
 
-	"github.com/lucas-clemente/quic-go"
+	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/ssh"
 )
