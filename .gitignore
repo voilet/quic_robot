@@ -1,0 +1,11 @@
+*.log
+*.cast
+certs/*.crt
+certs/*.key
+!certs/*.sh
+node_modules/
+web/node_modules/
+web/dist/
+.DS_Store
+*.env
+/var/log/quic-robot/

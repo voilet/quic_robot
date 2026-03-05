@@ -1,0 +1,22 @@
+I need you to help me build a QUIC-based WebSSH system in Go. This is Phase 1 MVP development.
+
+Project context:
+- Repository: https://github.com/voilet/quic_robot
+- Language: Go (not Rust)
+- Key dependencies: quic-go, golang.org/x/crypto/ssh
+- Architecture: Agent (reverse connection) <-> Server (QUIC endpoint) <-> Web (React + xterm.js)
+
+Phase 1 MVP scope:
+1. QUIC connection between Agent and Server
+2. SSH data forwarding (WebSSH -> QUIC Stream -> SSH -> Target Host)
+3. Basic WebSSH terminal (single session)
+4. Simple audit logging (session start/end, commands)
+
+Please:
+1. Review the existing docs (PRD.md, ARCHITECTURE.md, FAQ.md)
+2. Set up the Go project structure (cmd/, internal/, pkg/)
+3. Implement the basic QUIC Agent and Server
+4. Create a simple React frontend with xterm.js
+5. Test the end-to-end flow
+
+Start by reading the docs to understand the requirements, then create the project structure.
